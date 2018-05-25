@@ -1,4 +1,4 @@
-
+import pandas as pd
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, desc
@@ -84,9 +84,11 @@ def otusample(sample):
     results = engine.execute(query_string).fetchall()
     sample_values = [result[0] for result in results]  
     otu_ids = [result[1] for result in results]
-    otu_and_sample = [{"otu_ids": otu_ids}, {"sample_values": sample_values}]
+    df = pd.DataFrame({"otu_ids": otu_ids, "sample_values": sample_values})
+    clean_df = df[df['sample_values'] > 0 & df['sample_values'].notnull()]
+    otu_and_sample = clean_df.to_dict(orient="list")
     
-    return jsonify(otu_and_sample)
+    return jsonify([otu_and_sample])
     
 if __name__ == "__main__":
     app.run(debug=True)

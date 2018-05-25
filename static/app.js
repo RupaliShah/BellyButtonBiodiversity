@@ -1,108 +1,164 @@
 function getSampleNames(){
-    var selector = Document.getElementById("#selDataset");
+    var selector = document.getElementById("selDataset");
     var url = "/names";
     Plotly.d3.json(url, function(error, response){
         if (error) return console.warn(error);
-        for (var i = 0; i<response.lenth; i++){
-            var option = document.createElement('option')
+        for (var i = 0; i < response.length; i++){
+            var option = document.createElement('option');
             option.text = response[i];
             option.value = response[i];
-            selector.appendChild(option)
+            selector.appendChild(option);
         };
     });
 };
 
-function optionChanged(){
-    getData(sample);
-    UpdateMetaData(sample);
-}
+function optionChanged(sample){
+    createPieBubble(sample);
+    createGauge(sample);
+    updateMetaData(sample);
+};
 
-function getData(sample){
-
+function createPieBubble(sample){
+    var otuIds = [];
+    var sampleValues = [];
+    var hoverTexts = [];
     var url_sample = `/samples/${sample}`;
-    Plotly.d3.json(url, function(error, response_sample){
+    var url_otu = '/otu';
+
+    Plotly.d3.json(url_sample, function(error, response_sample){
         if (error) return console.warn(error);
-        var otuIds = response_sample.map(row => row.otu_ids);
-        var sampleValues = response_sample.map(row => row.sample_values);
-    });
+        var otuId = response_sample.map(row => row.otu_ids);
+        otuIds.push(otuId);    
+        var sampleValue = response_sample.map(row => row.sample_values);
+        sampleValues.push(sampleValue);
+        
+        // Plotly.d3.json(url_otu, function(error, response_otu){
+        //     if (error) return console.warn(error);
+        // hoverText.push(response_otu.map(row => row.otu_desc);
+        //     for (var i = 0; i < otuIds.length; i++){
+        //         hovertext = response_otu[otuIds[i]-1];
+        //         hoverTexts.push(hoverText);
+        //     };    
+        // });   
+        // var PIE = document.getElementById("pie");
+        // // if (PIE.innerHTML == " ") {
+        //     var trace = {
+        //     values: otuIds.slice(0,10),
+        //     labels: sampleValues.slice(0,10),
+        //     type: 'pie'
+        //     };
 
-    var url_otu = `/otu/${sample}`;
-    Plotly.d3.json(url, function(error, response_otu){
-        if (error) return console.warn(error);
-        var hovertext = response_otu.map(row => row.otu_desc);
-    });
+        //     var data = [trace];
+        //     var layout = {margin:{l:10, r:10, t:10, b:10}};
+        //     Plotly.newPlot(PIE, data, layout);
+        // //  }
+        // // else{
+        // //     Plotly.restyle(PIE, 'labels', [otuIds]);
+        // //     Plotly.restyle(PIE, 'values', [sampleValues]);
+        // // };
 
-    updatePie(otuIds,sample_values, hovertext);
-    updateBubble(otuIds,sample_values, hovertext);
-}
-
-
-function UpdatePie(otuIds,sample_values,hovertext){       
-    
-    otuIds = otuIds.slice(0,10);
-    sampleValues = sampleValues.slice(0,10);
-    hovertext = hovettext.slice(0,10);
-
-    var PIE = document.getElementById('#pie');
-    if (PIE.innerHTML == " ") {
-        var trace = {
-        labels: otuIds,
-        values: sampleValues,
-        hovertext: hovertext,
-        type: "pie" 
-        };
-        var data = [trace];
-        var layout = {margin:{l:10, r:10, t:10, b:10}};
-        Plotly.newPlot(PIE, data, layout);
-    }
-    else{
-        Plotly.restyle(PIE, labels, [otuIds])
-        Plotly.restyle(PIE, values, [sampleValues])
-        Plotly.restyle(PIE, hovertext, [hovertext])
-    };
-};
-
-
-function UpdateBubble(sampleotuIds, sampleValues, hovertext){
-
-    var BUBBLE = document.getElementById('#bubble');
-    if (BUBBLE.innerHTML == " ") {
-        var trace = {
-            x: otuIDs,
+        var BUBBLE = document.getElementById('bubble');
+        // if (BUBBLE.innerHTML == " ") {
+            var trace = {
+            x: otuIds,
             y: sampleValues,
-            mode: "markers",
-            type = "scatter", 
+            mode: 'markers',
+            type: 'scatter', 
             marker:{
                 size: sampleValues, 
-                color: otuIDS,
-                colorscale:"rainbow", 
-                opacity: .8
+                color: otuIds,
+                colorscale:'rainbow', 
+                
                 }
-                //   hoverinfo:
-        };
-        var data = [trace];
-        var layout = {xaxis: {title:'otu_ids'}, yaxis:{title:'Sample Values'}};
-        Plotly.newPlot(BUBBLE, data, layout);    
-    }
-    else {
-        Plotly.restyle(BUBBLE, 'x', [OtuIDS]);
-        Plotly.restyle(BUBBLE, 'y', [SampleValues]);
-    }; 
+            };
+            var data = [trace];
+            var layout = {xaxis: {title:'otu_ids'}, yaxis:{title:'Sample Values'}};
+            Plotly.newPlot(BUBBLE, data, layout); 
+        // }   
+        // else{
+        //     Plotly.restyle(BUBBLE, 'x', [otuIds]);
+        //     Plotly.restyle(BUBBLE, 'y', [sampleValues]);
+        // }; 
+    });
+};
+         
+
+function createGauge(sample){
+    Plotly.d3.json(`/wfreq/${sample}`, function(error, response_wfreq) {
+        if (error) return console.warn(error);
+        var level = response_wfreq*20;
+        // Trig to calc meter point
+        var degrees = 180 - level,
+        radius = .5;
+        var radians = degrees * Math.PI / 180;
+        var x = radius * Math.cos(radians);
+        var y = radius * Math.sin(radians);
+        // Path: may have to change to create a better triangle
+        var mainPath = 'M -.0 -0.025 L .0 0.025 L ',
+        pathX = String(x),
+        space = ' ',
+        pathY = String(y),
+        pathEnd = ' Z';
+        var path = mainPath.concat(pathX,space,pathY,pathEnd);
+        var data = [{ type: 'scatter',
+                    x: [0], y:[0],
+                    marker: {size: 28, color:'850000'},
+                    showlegend: false,
+                    name: 'speed',
+                    text: level,
+                    hoverinfo: 'text+name'},
+                    { values: [50/6, 50/6, 50/6, 50/6, 50/6, 50/6, 50],
+                    rotation: 90,
+                    text: ['TOO FAST!', 'Pretty Fast', 'Fast', 'Average',
+                    'Slow', 'Super Slow', ''],
+                    textinfo: 'text',
+                    textposition:'inside',
+                    marker: {colors:['rgba(14, 127, 0, .5)', 'rgba(110, 154, 22, .5)',
+                            'rgba(170, 202, 42, .5)', 'rgba(202, 209, 95, .5)',
+                             'rgba(210, 206, 145, .5)', 'rgba(232, 226, 202, .5)',
+                             'rgba(255, 255, 255, 0)']},
+                    labels: ['151-180', '121-150', '91-120', '61-90', '31-60', '0-30', ''],
+                     hoverinfo: 'label',
+                    hole: .5,
+                    type: 'pie',
+                    showlegend: false
+        }];
+        var layout = {
+                    shapes:[{
+                    type: 'path',
+                    path: path,
+                    fillcolor: '850000',
+                    line: {color: '850000'}
+                    }],
+                    title: '<b>Belly Button Washing Frequency</b> <br>Scrubs per Week',
+                    Speed: '0-100',
+                    height: 500,
+                    width: 500,
+                    xaxis: {zeroline:false, showticklabels:false,
+                             showgrid: false, range: [-1, 1]},
+                    yaxis: {zeroline:false, showticklabels:false,
+                            showgrid: false, range: [-1, 1]}
+                    };
+        var GAUGE = document.getElementById('gauge');
+        Plotly.newPlot(GAUGE, data, layout);
+    });
 };
 
-function UpdateMetaData(sample){
+function updateMetaData(sample){
     var url = `/metadata/${sample}`;
     Plotly.d3.json(url, function(error, response){
         if (error) return console.warn(error);
-        var metaData = document.getElementById("#sampleMetaData");
+        var metaData = document.getElementById("sampleMetaData");
+        metaData.innerHTML = "";
         metaData.innerHTML = `AGE: ${response.AGE}`;
-        metaData.innerHTML = `<br>BBTYPE: ${response.BBTYPE}`;
-        metaData.innerHTML = `<br>ETHNICITY: ${response.ETHNICITY}`;
-        metaData.innerHTML = `<br>GENDER: ${response.GENDER}`;
-        metaData.innerHTML = `<br>LOCATION: ${response.LOCATION}`;
-        metaData.innerHTML = `<br>SAMPLEID: ${response.SAMPLEID}`;
-    });
+        metaData.innerHTML += `</br>BBTYPE: ${response.BBTYPE}`;
+        metaData.innerHTML += `</br>ETHNICITY: ${response.ETHNICITY}`;
+        metaData.innerHTML += `</br>GENDER: ${response.GENDER}`;
+        metaData.innerHTML += `</br>LOCATION: ${response.LOCATION}`;
+        metaData.innerHTML += `</br>SAMPLEID: ${response.SAMPLEID}`;
+    });    
 };
 
 getSampleNames();
-
+// optionChanged(document.getElementById("selDataset").value);
+optionChanged('BB_940');
