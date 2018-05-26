@@ -17,7 +17,7 @@ function init(){
 };
 
 function optionChanged(sample){
-//    updateCharts(sample);
+//  createCharts(sample);
     createMetaData(sample);
     createGauge(sample);
 };
@@ -39,12 +39,12 @@ function createCharts(sample){
         
         // Plotly.d3.json(url_otu, function(error, response_otu){
         //     if (error) return console.warn(error);
-        // hoverText.push(response_otu.map(row => row.otu_desc);
         //     for (var i = 0; i < otuIds.length; i++){
         //         hovertext = response_otu[otuIds[i]-1];
         //         hoverTexts.push(hoverText);
         //     };    
         // });   
+        
        var PIE = document.getElementById("pie");
             var trace = {
             values: sampleValues.slice(0,10),
@@ -54,12 +54,11 @@ function createCharts(sample){
             var data = [trace];
             var layout = {title: 'Pie Chart'};                            
             Plotly.newPlot(PIE, data, layout);
-        });
-
+        
         var BUBBLE = document.getElementById('bubble');
             var trace = {
             x: otuIds,
-            y: +sampleValues,
+            y: sampleValues,
             mode: 'markers',
             type: 'scatter', 
             marker:{
@@ -71,18 +70,18 @@ function createCharts(sample){
             var data = [trace];
             var layout = {xaxis: {title:'otu_ids'}, yaxis:{title:'Sample Values'}};
             Plotly.newPlot(BUBBLE, data, layout); 
-   };
-       
+    });
+};
    
-function updateCharts(sample){
+function updateCharts(otuIds, SampleValues){
     var PIE = document.getElementById("pie");
     var BUBBLE = document.getElementById('bubble');
-    Plotly.restyle('pie', 'labels', [otuIds]);
-    Plotly.restyle('pie', 'values', [sampleValues]);
-    Plotly.restyle('bubble', 'x', [otuIds]);
-    Plotly.restyle('bubble', 'y', [sampleValues]);
-    Plotly.restyle('bubble', 'size', [sampleValues]);
-    Plotly.restyle('bubble', 'color', [otuIds]);
+    Plotly.restyle(PIE, 'labels', [otuIds]);
+    Plotly.restyle(PIE, 'values', [sampleValues]);
+    Plotly.restyle(BUBBLE, 'x', [otuIds]);
+    Plotly.restyle(BUBBLE, 'y', [sampleValues]);
+    Plotly.restyle(BUBBLE, 'size', [sampleValues]);
+    Plotly.restyle(BUBBLE, 'color', [otuIds]);
 };
 
 function createGauge(sample){
