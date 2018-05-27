@@ -17,11 +17,10 @@ function init(){
 };
 
 function optionChanged(sample){
-//  createCharts(sample);
     createMetaData(sample);
+    updateCharts(sample);
     createGauge(sample);
 };
-
 
 function createCharts(sample){
     var otuIds = [];
@@ -31,19 +30,13 @@ function createCharts(sample){
     var url_otu = '/otu';
 
     Plotly.d3.json(url_sample, function(error, response_sample){
-        if (error) return console.warn(error);
-        var otuId = response_sample.map(row => row.otu_ids);
-        otuIds.push(otuId);    
-        var sampleValue = response_sample.map(row => row.sample_values);
-        sampleValues.push(sampleValue);
-        
-        // Plotly.d3.json(url_otu, function(error, response_otu){
-        //     if (error) return console.warn(error);
-        //     for (var i = 0; i < otuIds.length; i++){
-        //         hovertext = response_otu[otuIds[i]-1];
-        //         hoverTexts.push(hoverText);
-        //     };    
-        // });   
+        if (error) return console.warn(error);     
+        for (var i = 0; i<3000; i++){
+            otuId = parseInt(response_sample[0]["otu_ids"][i]);
+            otuIds.push(otuId);
+            sampleValue = parseInt(response_sample[0]["sample_values"][i]);
+            sampleValues.push(sampleValue);
+        }
         
        var PIE = document.getElementById("pie");
             var trace = {
@@ -51,9 +44,8 @@ function createCharts(sample){
             labels: otuIds.slice(0,10),
             type: 'pie'
             };
-            var data = [trace];
-            var layout = {title: 'Pie Chart'};                            
-            Plotly.newPlot(PIE, data, layout);
+            var data = [trace];                            
+            Plotly.newPlot(PIE, data);
         
         var BUBBLE = document.getElementById('bubble');
             var trace = {
@@ -64,24 +56,41 @@ function createCharts(sample){
             marker:{
                 size: sampleValues, 
                 color: otuIds,
-                colorscale:'rainbow'      
+                colorscale:'Earth'      
                 }
             };
             var data = [trace];
             var layout = {xaxis: {title:'otu_ids'}, yaxis:{title:'Sample Values'}};
-            Plotly.newPlot(BUBBLE, data, layout); 
+            Plotly.newPlot(BUBBLE, data, layout);
     });
 };
    
-function updateCharts(otuIds, SampleValues){
-    var PIE = document.getElementById("pie");
-    var BUBBLE = document.getElementById('bubble');
-    Plotly.restyle(PIE, 'labels', [otuIds]);
-    Plotly.restyle(PIE, 'values', [sampleValues]);
-    Plotly.restyle(BUBBLE, 'x', [otuIds]);
-    Plotly.restyle(BUBBLE, 'y', [sampleValues]);
-    Plotly.restyle(BUBBLE, 'size', [sampleValues]);
-    Plotly.restyle(BUBBLE, 'color', [otuIds]);
+function updateCharts(sample){
+    var otuIds = [];
+    var sampleValues = [];
+    var hoverTexts = [];
+    var url_sample = `/samples/${sample}`;
+    var url_otu = '/otu';
+
+    Plotly.d3.json(url_sample, function(error, response_sample){
+        if (error) return console.warn(error);     
+        for (var i = 0; i<3000; i++){
+            otuId = parseInt(response_sample[0]["otu_ids"][i]);
+            otuIds.push(otuId);
+            sampleValue = parseInt(response_sample[0]["sample_values"][i]);
+            sampleValues.push(sampleValue);
+            labels = otuIds.slice(0,10);
+            values = sampleValues.slice(0,10);
+        }
+        var PIE = document.getElementById("pie");
+        var BUBBLE = document.getElementById('bubble');
+        Plotly.restyle(PIE, 'labels', [labels]);
+        Plotly.restyle(PIE, 'values', [values]);
+        Plotly.restyle(BUBBLE, 'x', [otuIds]);
+        Plotly.restyle(BUBBLE, 'y', [sampleValues]);
+        Plotly.restyle(BUBBLE, 'size', [sampleValues]);
+        Plotly.restyle(BUBBLE, 'color', [otuIds]);
+    });
 };
 
 function createGauge(sample){

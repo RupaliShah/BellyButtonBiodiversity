@@ -86,9 +86,10 @@ def otusample(sample):
     otu_ids = [result[1] for result in results]
     df = pd.DataFrame({"otu_ids": otu_ids, "sample_values": sample_values})
     clean_df = df[df['sample_values'] > 0 & df['sample_values'].notnull()]
-    otu_and_sample = clean_df.to_dict(orient="list")
+    otu_and_sample = [{"otu_ids":clean_df["otu_ids"].values.tolist(),
+                    "sample_values":clean_df["sample_values"].values.tolist()}]
     
-    return jsonify([otu_and_sample])
+    return jsonify(otu_and_sample)
     
 if __name__ == "__main__":
     app.run(debug=True)
