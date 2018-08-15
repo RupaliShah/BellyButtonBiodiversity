@@ -8,8 +8,8 @@ Flask is used to design an API for the dataset and to serve the HTML and JavaScr
   <img width="600" height="300" src="images/select sample.png">
 </p>
 <p align="center">
-  <img width="600" height="200" src="images/pie chart and washing frequency.png">
+  <img width="500" height="200" src="images/pie chart and washing frequency.png">
 </p>
 <p align="center">
-  <img width="600" height="300" src="images/bubble chart.png">
+  <img width="500" height="300" src="images/bubble chart.png">
 </p>
